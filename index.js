@@ -11,6 +11,20 @@ router.get('/',function(req,res) {
     res.json({message: 'Welcome to the api'});
 });
 
+io.on('connection',function(socket) {
+
+    console.log('A User connected!');
+
+    socket.on('disconnect',function() {
+        console.log('User disconnected');
+    });
+
+    socket.on('msg',function(msg) {
+        socket.emit('msg',{msg: 'you sent: '+msg});
+    });
+
+});
+
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());

@@ -34,10 +34,22 @@ io.on('connection',function(socket) {
                         console.log(err);
                     }
                     io.emit('new user connected',{username: usr.username,time: Date.now()});
-                })
+                    MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
+                        if(err) {
+                            console.log(err);
+                        }
+                        socket.emit('initial messages',messages);
+                    });
+                });
             } else {
                 console.log("Existing user");
                 io.emit('new user connected',{username: user.username,time: Date.now()});
+                MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
+                    if(err) {
+                        console.log(err);
+                    }
+                    socket.emit('initial messages',messages);
+                });
             }
         });
     });
@@ -99,6 +111,16 @@ router.route('/message/delete')
             res.json({message: 'Successfully deleted!'});
         });
     });
+
+router.route('/messages/before')
+    .get(function(req,res) {
+        MessageModel.find({added: {$lte: Date.now()}},function(err,messages) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(messages);
+        })
+    })
 
 var db = mongoose.connection;
 db.on('error',console.error.bind(console,'connection error: '));

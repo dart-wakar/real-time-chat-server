@@ -48,9 +48,26 @@ io.on('connection',function(socket) {
 
     socket.on('msg',function(msg) {
         console.log('New msg received');
-        io.emit('msg',{username: socket.username,msg: msg});
+        UserModel.findOne({username: socket.username},function(err,user) {
+            if(err) {
+                console.log(err);
+            } else {
+                var message = new MessageModel();
+                message.message = msg;
+                message.user = user._id;
+                message.save(function(err,mesg) {
+                    if(err) {
+                        console.log(err);
+                    }
+                    user.messages.push(mesg._id);
+                    user.save(function(err,usr) {
+                        console.log("success");
+                        io.emit('msg',{username: socket.username,msg: mesg});
+                    })
+                });
+            }
+        });
     });
-
 });
 
 router.route('/users')
@@ -60,6 +77,26 @@ router.route('/users')
                 res.send(err);
             }
             res.json(users);
+        });
+    });
+
+router.route('/messages')
+    .get(function(req,res) {
+        MessageModel.find(function(err,messages) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(messages);
+        })
+    })
+
+router.route('/message/delete')
+    .post(function(req,res) {
+        MessageModel.remove({_id: req.body.message_id},function(err,message) {
+            if(err) {
+                res.send(err);
+            }
+            res.json({message: 'Successfully deleted!'});
         });
     });
 

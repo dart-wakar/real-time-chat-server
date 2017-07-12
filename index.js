@@ -15,12 +15,18 @@ io.on('connection',function(socket) {
 
     console.log('A User connected!');
 
+    socket.on('login',function(username) {
+        socket.username = username;
+        io.emit('new user connected',{username: socket.username,time: Date.now()});
+    });
+
     socket.on('disconnect',function() {
         console.log('User disconnected');
     });
 
     socket.on('msg',function(msg) {
-        socket.emit('msg',{msg: 'you sent: '+msg});
+        console.log('New msg received');
+        io.emit('msg',{msg: msg});
     });
 
 });

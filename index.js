@@ -26,7 +26,7 @@ io.on('connection',function(socket) {
 
     socket.on('msg',function(msg) {
         console.log('New msg received');
-        io.emit('msg',{msg: msg});
+        io.emit('msg',{username: socket.username,msg: msg});
     });
 
 });

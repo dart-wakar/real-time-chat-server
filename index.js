@@ -81,6 +81,16 @@ io.on('connection',function(socket) {
             }
         });
     });
+
+    socket.on('user typing',function(message) {
+        console.log(socket.username+' typing');
+        socket.broadcast.emit('typing now',{username: socket.username});
+    });
+
+    socket.on('stop typing',function(msg) {
+        console.log(socket.username+' stopped typing');
+        socket.broadcast.emit('stopped typing',{username: socket.username});
+    });
 });
 
 router.route('/users')

@@ -135,6 +135,16 @@ router.route('/users')
         });
     });
 
+router.route('/user/delete')
+    .post(function(req,res) {
+        UserModel.remove({_id: req.body.user_id},function(err,user) {
+            if(err) {
+                res.send(err);
+            }
+            res.json({message: 'Successfully deleted !'});
+        });
+    });
+
 router.route('/messages')
     .get(function(req,res) {
         MessageModel.find(function(err,messages) {

@@ -11,6 +11,14 @@ mongoose.connect('mongodb://localhost/realTimeChat');
 var UserModel = require('./models/user');
 var MessageModel = require('./models/message');
 
+router.use(function(req,res,next) {
+    res.header("Access-Control-Allow-Origin","*");
+    res.header("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods","*");
+    console.log('An api request is made');
+    next();
+});
+
 router.get('/',function(req,res) {
     console.log("Welcome to the api")
     res.json({message: 'Welcome to the api'});
@@ -33,22 +41,34 @@ io.on('connection',function(socket) {
                     if(err) {
                         console.log(err);
                     }
-                    io.emit('new user connected',{username: usr.username,time: Date.now()});
+                    usr.status = 2;
+                    usr.save(function(err,ur) {
+                        if(err) {
+                            console.log(err);
+                        }
+                        io.emit('new user connected',{username: ur.username,time: Date.now()});
+                        MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
+                            if(err) {
+                                console.log(err);
+                            }
+                            socket.emit('initial messages',messages);
+                        });
+                    });
+                });
+            } else {
+                console.log("Existing user");
+                user.status = 2;
+                user.save(function(err,usr) {
+                    if(err) {
+                        console.log(err);
+                    }
+                    io.emit('new user connected',{username: user.username,time: Date.now()});
                     MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
                         if(err) {
                             console.log(err);
                         }
                         socket.emit('initial messages',messages);
                     });
-                });
-            } else {
-                console.log("Existing user");
-                io.emit('new user connected',{username: user.username,time: Date.now()});
-                MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
-                    if(err) {
-                        console.log(err);
-                    }
-                    socket.emit('initial messages',messages);
                 });
             }
         });
@@ -130,8 +150,28 @@ router.route('/messages/before')
                 res.send(err);
             }
             res.json(messages);
-        })
-    })
+        });
+    });
+
+router.route('/users/online')
+    .get(function(req,res) {
+        UserModel.find({status: 2},function(err,users) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(users);
+        });
+    });
+
+router.route('/users/offline')
+    .get(function(req,res) {
+        UserModel.find({status: 1},function(err,users) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(users);
+        });
+    });
 
 var db = mongoose.connection;
 db.on('error',console.error.bind(console,'connection error: '));

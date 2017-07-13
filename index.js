@@ -76,6 +76,18 @@ io.on('connection',function(socket) {
 
     socket.on('disconnect',function() {
         console.log(socket.username+' disconnected');
+        UserModel.findOne({username: socket.username},function(err,user) {
+            if(err){
+                console.log(err);
+            }
+            user.status = 1;
+            user.save(function(err,usr) {
+                if(err){
+                    console.log(err);
+                }
+                io.emit('offline user',{username: socket.username});
+            });
+        });
         socket.broadcast.emit('user disconnect',{disconnected_username: socket.username,disconnect_time: Date.now()});
     });
 

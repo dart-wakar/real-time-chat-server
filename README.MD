@@ -31,4 +31,5 @@ This project is built on express.js framework.The real time chat feature is hand
     If everything worked properly the following should be logged on the node terminal.
     ```sh
     Websocket listening on 3000
+    Connected to database !
     ```

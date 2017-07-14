@@ -46,7 +46,7 @@ io.on('connection',function(socket) {
                         if(err) {
                             console.log(err);
                         }
-                        io.emit('new user connected',{username: ur.username,time: Date.now()});
+                        io.emit('new user connected',{user: ur,time: Date.now()});
                         MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
                             if(err) {
                                 console.log(err);
@@ -62,7 +62,7 @@ io.on('connection',function(socket) {
                     if(err) {
                         console.log(err);
                     }
-                    io.emit('new user connected',{username: user.username,time: Date.now()});
+                    io.emit('new user connected',{user: usr,time: Date.now()});
                     MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
                         if(err) {
                             console.log(err);
@@ -85,7 +85,7 @@ io.on('connection',function(socket) {
                 if(err){
                     console.log(err);
                 }
-                io.emit('offline user',{username: socket.username});
+                io.emit('offline user',{user: usr});
             });
         });
         socket.broadcast.emit('user disconnect',{disconnected_username: socket.username,disconnect_time: Date.now()});

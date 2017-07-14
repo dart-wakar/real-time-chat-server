@@ -79,16 +79,19 @@ io.on('connection',function(socket) {
         UserModel.findOne({username: socket.username},function(err,user) {
             if(err){
                 console.log(err);
-            }
-            user.status = 1;
-            user.save(function(err,usr) {
-                if(err){
-                    console.log(err);
-                }
-                io.emit('offline user',{user: usr});
-            });
+            } else if(user === null) {
+                console.log('nobody logged in!');
+            } else {
+                user.status = 1;
+                user.save(function(err,usr) {
+                    if(err){
+                        console.log(err);
+                    }
+                    io.emit('offline user',{user: usr});
+                    socket.broadcast.emit('user disconnect',{disconnected_username: socket.username,disconnect_time: Date.now()});
+                });
+            }      
         });
-        socket.broadcast.emit('user disconnect',{disconnected_username: socket.username,disconnect_time: Date.now()});
     });
 
     socket.on('msg',function(msg) {

@@ -138,7 +138,7 @@ router.route('/users')
         });
     });
 
-router.route('/users/:user_id')
+router.route('/user/:user_id')
     .get(function(req,res) {
         UserModel.findById(req.params.user_id)
             .populate('messages')

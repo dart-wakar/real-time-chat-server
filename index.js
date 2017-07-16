@@ -138,6 +138,18 @@ router.route('/users')
         });
     });
 
+router.route('/users/:user_id')
+    .get(function(req,res) {
+        UserModel.findById(req.params.user_id)
+            .populate('messages')
+            .exec(function(err,user) {
+                if(err) {
+                    res.send(err);
+                }
+                res.json(user);
+            });
+    });
+
 router.route('/user/delete')
     .post(function(req,res) {
         UserModel.remove({_id: req.body.user_id},function(err,user) {

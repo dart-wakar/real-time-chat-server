@@ -147,7 +147,14 @@ io.on('connection',function(socket) {
                 privateChatRoomString = otherUserIdString+currentUserIdString;
         }
         console.log(privateChatRoomString);
-    })
+        socket.join(privateChatRoomString,function(err) {
+            if(err) {
+                console.log(err);
+            }
+            console.log('success');
+            socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
+        });
+    });
 
 });
 

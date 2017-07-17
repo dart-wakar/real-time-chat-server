@@ -46,6 +46,7 @@ io.on('connection',function(socket) {
                         if(err) {
                             console.log(err);
                         }
+                        socket.user_id = ur._id;
                         io.emit('new user connected',{user: ur,time: Date.now()});
                         MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
                             if(err) {
@@ -62,6 +63,7 @@ io.on('connection',function(socket) {
                     if(err) {
                         console.log(err);
                     }
+                    socket.user_id = usr._id;
                     io.emit('new user connected',{user: usr,time: Date.now()});
                     MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
                         if(err) {
@@ -76,6 +78,7 @@ io.on('connection',function(socket) {
 
     socket.on('disconnect',function() {
         console.log(socket.username+' disconnected');
+        console.log(socket.user_id+' disconnected');
         UserModel.findOne({username: socket.username},function(err,user) {
             if(err){
                 console.log(err);

@@ -158,7 +158,7 @@ io.on('connection',function(socket) {
     });
 
     socket.on('send private message',function(data) {
-        io.to(socket.current_room).emit('got private message',{sender: socket.user_id,message: data.message,other_user_id: data.otherUserId});
+        io.to(socket.current_room).emit('got private message',{sender: socket.username,message: data.message,other_user_id: data.otherUserId});
     });
 
 });

@@ -129,6 +129,26 @@ io.on('connection',function(socket) {
         console.log(socket.username+' stopped typing');
         socket.broadcast.emit('stopped typing',{username: socket.username});
     });
+
+    socket.on('do private chat',function(user) {
+        var currentUserIdString = new String();
+        var otherUserIdString = new String();
+        var privateChatRoomString = new String();
+        currentUserIdString = socket.user_id.toString();
+        otherUserIdString = user._id.toString();
+        switch(currentUserIdString.localeCompare(otherUserIdString)) {
+            case -1:
+                privateChatRoomString = currentUserIdString+otherUserIdString;
+                break;
+            case 0:
+                privateChatRoomString = currentUserIdString+otherUserIdString;
+                break;
+            case 1:
+                privateChatRoomString = otherUserIdString+currentUserIdString;
+        }
+        console.log(privateChatRoomString);
+    })
+
 });
 
 router.route('/users')

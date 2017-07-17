@@ -162,13 +162,15 @@ router.route('/user/delete')
 
 router.route('/messages')
     .get(function(req,res) {
-        MessageModel.find(function(err,messages) {
-            if(err) {
-                res.send(err);
-            }
-            res.json(messages);
-        })
-    })
+        MessageModel.find()
+                    .populate('user')
+                    .exec(function(err,messages) {
+                        if(err) {
+                            res.send(err);
+                        }
+                        res.json(messages);
+                    });
+    });
 
 router.route('/message/delete')
     .post(function(req,res) {

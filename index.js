@@ -152,8 +152,13 @@ io.on('connection',function(socket) {
                 console.log(err);
             }
             console.log('success');
+            socket.current_room = privateChatRoomString;
             socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
         });
+    });
+
+    socket.on('send private message',function(data) {
+        io.to(socket.current_room).emit('got private message',{sender: socket.user_id,message: data.message,other_user_id: data.otherUserId});
     });
 
 });

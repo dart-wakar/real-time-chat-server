@@ -169,7 +169,7 @@ io.on('connection',function(socket) {
                         }
                         console.log('success');
                         socket.current_room = privateChatRoomString;
-                        socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
+                        socket.emit('go to private chat',{room: newroom,current_user_id: socket.user_id,other_user: user});
                     });
                 });
             } else {
@@ -180,7 +180,7 @@ io.on('connection',function(socket) {
                     }
                     console.log('success');
                     socket.current_room = privateChatRoomString;
-                    socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
+                    socket.emit('go to private chat',{room: room,current_user_id: socket.user_id,other_user: user});
                 });
             }
         });
@@ -189,6 +189,32 @@ io.on('connection',function(socket) {
     socket.on('send private message',function(data) {
         io.to(socket.current_room).emit('got private message',{sender: socket.username,message: data.message,other_user_id: data.otherUserId});
     });
+
+    socket.on('request for room name',function(other_user_id) {
+        console.log('ggwp');
+         var currentUserIdString = new String();
+         var otherUserIdString = new String();
+         var privateChatRoomString = new String();
+         currentUserIdString = socket.user_id.toString();
+         otherUserIdString = other_user_id.toString();
+         switch(currentUserIdString.localeCompare(otherUserIdString)) {
+             case -1:
+                 privateChatRoomString = currentUserIdString+otherUserIdString;
+                 break;
+             case 0:
+                 privateChatRoomString = currentUserIdString+otherUserIdString;
+                 break;
+             case 1:
+                 privateChatRoomString = otherUserIdString+currentUserIdString;
+         }
+         RoomModel.findOne({name: privateChatRoomString},function(err,room) {
+             if(err) {
+                 console.log(err);
+             }
+             console.log(socket.current_room);
+             io.to(socket.current_room).emit('take room name',room)
+         });
+     });
 
 });
 
@@ -293,6 +319,16 @@ router.route('/room/delete')
                 res.send(err);
             }
             res.json({message: 'Successfully deleted !'});
+        });
+    });
+
+router.route('/room/fromroomname')
+    .post(function(req,res) {
+        RoomModel.findOne({name: req.body.room_name},function(err,room) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(room);
         });
     });
 

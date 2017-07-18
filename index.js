@@ -49,12 +49,6 @@ io.on('connection',function(socket) {
                         }
                         socket.user_id = ur._id;
                         io.emit('new user connected',{user: ur,time: Date.now()});
-                        MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
-                            if(err) {
-                                console.log(err);
-                            }
-                            socket.emit('initial messages',messages);
-                        });
                     });
                 });
             } else {
@@ -66,12 +60,6 @@ io.on('connection',function(socket) {
                     }
                     socket.user_id = usr._id;
                     io.emit('new user connected',{user: usr,time: Date.now()});
-                    MessageModel.find({added: {$lte: Date.now()}}).populate('user').exec(function(err,messages){
-                        if(err) {
-                            console.log(err);
-                        }
-                        socket.emit('initial messages',messages);
-                    });
                 });
             }
         });

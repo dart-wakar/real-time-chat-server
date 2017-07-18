@@ -119,6 +119,14 @@ io.on('connection',function(socket) {
         socket.broadcast.emit('stopped typing',{username: socket.username});
     });
 
+    socket.on('user typing private',function(data) {
+        socket.broadcast.to(data.room_name).emit('typing in private now',{username: socket.username});
+    });
+
+    socket.on('stop typing private',function(data) {
+        socket.broadcast.to(data.room_name).emit('stopped typing in private',{username: socket.username});
+    });
+
     socket.on('do private chat',function(user) {
         var currentUserIdString = new String();
         var otherUserIdString = new String();

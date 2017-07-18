@@ -296,6 +296,26 @@ router.route('/room/delete')
         });
     });
 
+router.route('/messages/default')
+    .get(function(req,res) {
+        MessageModel.find({room: null},function(err,messages) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(messages);
+        });
+    });
+
+router.route('/messages/byroomid')
+    .post(function(req,res) {
+        MessageModel.find({room: req.body.room_id},function(err,messages) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(messages);
+        });
+    });
+
 var db = mongoose.connection;
 db.on('error',console.error.bind(console,'connection error: '));
 db.once('open',function() {

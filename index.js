@@ -164,8 +164,42 @@ io.on('connection',function(socket) {
                             console.log(err);
                         }
                         console.log('success');
-                        socket.current_room = privateChatRoomString;
-                        socket.emit('go to private chat',{room: newroom,current_user_id: socket.user_id,other_user: user});
+                        UserModel.findById(currentUserIdString,function(err,curruser) {
+                            if(err) {
+                                console.log(err);
+                            } else {
+                                if((curruser.rooms.indexOf(newroom._id)) === -1){
+                                    console.log('room not added to user already');
+                                    console.log('adding room to user');
+                                    curruser.rooms.push(newroom._id);
+                                    curruser.save(function(err,usr) {
+                                        if(err) {
+                                            console.log(err);
+                                        } else {
+                                            console.log(usr.rooms.indexOf(newroom._id));
+                                        }
+                                    });
+                                }
+                                UserModel.findById(otherUserIdString,function(err,othrusr) {
+                                    if(err) {
+                                        console.log(err);
+                                    } else {
+                                        if((othrusr.rooms.indexOf(newroom._id)) === -1) {
+                                            othrusr.rooms.push(newroom._id);
+                                            othrusr.save(function(err,otrusr) {
+                                                if(err) {
+                                                    console.log(err);
+                                                } else {
+                                                    console.log(otrusr.rooms.indexOf(newroom._id));
+                                                }
+                                            });
+                                        }
+                                        socket.current_room = privateChatRoomString;
+                                        socket.emit('go to private chat',{room: newroom,current_user_id: socket.user_id,other_user: othrusr});
+                                    }
+                                });
+                            }
+                        });
                     });
                 });
             } else {
@@ -175,8 +209,42 @@ io.on('connection',function(socket) {
                         console.log(err);
                     }
                     console.log('success');
-                    socket.current_room = privateChatRoomString;
-                    socket.emit('go to private chat',{room: room,current_user_id: socket.user_id,other_user: user});
+                    UserModel.findById(currentUserIdString,function(err,curruser) {
+                        if(err) {
+                            console.log(err);
+                        } else {
+                            if((curruser.rooms.indexOf(room._id)) === -1){
+                                console.log('room not added to user already');
+                                console.log('adding room to user');
+                                curruser.rooms.push(room._id);
+                                curruser.save(function(err,usr) {
+                                    if(err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log(usr.rooms.indexOf(room._id));
+                                    }
+                                });
+                            }
+                            UserModel.findById(otherUserIdString,function(err,othrusr) {
+                                if(err) {
+                                    console.log(err);
+                                } else {
+                                    if((othrusr.rooms.indexOf(room._id)) === -1) {
+                                        othrusr.rooms.push(room._id);
+                                        othrusr.save(function(err,otrusr) {
+                                            if(err) {
+                                                console.log(err);
+                                            } else {
+                                                console.log(otrusr.rooms.indexOf(room._id));
+                                            }
+                                        });
+                                    }
+                                    socket.current_room = privateChatRoomString;
+                                    socket.emit('go to private chat',{room: room,current_user_id: socket.user_id,other_user: othrusr});
+                                }
+                            });
+                        }
+                    });
                 });
             }
         });

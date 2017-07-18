@@ -376,12 +376,14 @@ router.route('/room/fromroomname')
 
 router.route('/messages/default')
     .get(function(req,res) {
-        MessageModel.find({room: null},function(err,messages) {
-            if(err) {
-                res.send(err);
-            }
-            res.json(messages);
-        });
+        MessageModel.find({room: null})
+            .populate('user')
+            .exec(function(err,messages) {
+                if(err) {
+                    res.send(err);
+                }
+                res.json(messages);
+            });
     });
 
 router.route('/messages/byroomid')

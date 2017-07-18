@@ -187,7 +187,49 @@ io.on('connection',function(socket) {
     });
 
     socket.on('send private message',function(data) {
-        io.to(socket.current_room).emit('got private message',{sender: socket.username,message: data.message,other_user_id: data.otherUserId});
+        RoomModel.findOne({name: socket.current_room},function(err,room) {
+            if(err) {
+                console.log(err);
+            } else {
+                var new_message = new MessageModel();
+                new_message.message = data.message;
+                new_message.user = socket.user_id;
+                new_message.room = room._id;
+                new_message.save(function(err,msg) {
+                    if(err) {
+                        console.log(err);
+                    } else {
+                        UserModel.findById(socket.user_id,function(err,user) {
+                            user.messages.push(msg._id);
+                            user.save(function(err,usr) {
+                                if(err) {
+                                    console.log(err);
+                                } else {
+                                    room.messages.push(msg._id);
+                                    room.save(function(err,rm) {
+                                        if(err) {
+                                            console.log(err);
+                                        } else {
+                                            MessageModel.findById(msg._id)
+                                                .populate('user')
+                                                .exec(function(err,mg) {
+                                                    if(err){
+                                                        console.log(err);
+                                                    } else {
+                                                        console.log('Damn successful !');
+                                                        io.to(socket.current_room).emit('got private message',{sender: socket.username,message: mg,other_user_id: data.otherUserId,room: rm});
+                                                    }
+                                                })
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+        });
+        //io.to(socket.current_room).emit('got private message',{sender: socket.username,message: data.message,other_user_id: data.otherUserId});
     });
 
     socket.on('request for room name',function(other_user_id) {
@@ -344,12 +386,14 @@ router.route('/messages/default')
 
 router.route('/messages/byroomid')
     .post(function(req,res) {
-        MessageModel.find({room: req.body.room_id},function(err,messages) {
-            if(err) {
-                res.send(err);
-            }
-            res.json(messages);
-        });
+        MessageModel.find({room: req.body.room_id})
+            .populate('user')
+            .exec(function(err,messages) {
+                if(err) {
+                    res.send(err);
+                }
+                res.json(messages);
+            });
     });
 
 var db = mongoose.connection;

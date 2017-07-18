@@ -10,6 +10,7 @@ var io = require('socket.io')(http);
 mongoose.connect('mongodb://localhost/realTimeChat');
 var UserModel = require('./models/user');
 var MessageModel = require('./models/message');
+var RoomModel = require('./models/room');
 
 router.use(function(req,res,next) {
     res.header("Access-Control-Allow-Origin","*");
@@ -147,13 +148,41 @@ io.on('connection',function(socket) {
                 privateChatRoomString = otherUserIdString+currentUserIdString;
         }
         console.log(privateChatRoomString);
-        socket.join(privateChatRoomString,function(err) {
+        //createOrGetRoom(privateChatRoomString);
+        RoomModel.findOne({name: privateChatRoomString},function(err,room) {
             if(err) {
                 console.log(err);
+            } else if(room === null) {
+                console.log('creating new room');
+                var new_room = new RoomModel();
+                new_room.name = privateChatRoomString;
+                new_room.users.push(socket.user_id);
+                new_room.users.push(user._id);
+                new_room.save(function(err,newroom) {
+                    if(err) {
+                        console.log(err);
+                    }
+                    console.log('new room created !');
+                    socket.join(privateChatRoomString,function(err) {
+                        if(err) {
+                            console.log(err);
+                        }
+                        console.log('success');
+                        socket.current_room = privateChatRoomString;
+                        socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
+                    });
+                });
+            } else {
+                console.log('existing room');
+                socket.join(privateChatRoomString,function(err) {
+                    if(err) {
+                        console.log(err);
+                    }
+                    console.log('success');
+                    socket.current_room = privateChatRoomString;
+                    socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
+                });
             }
-            console.log('success');
-            socket.current_room = privateChatRoomString;
-            socket.emit('go to private chat',{room: privateChatRoomString,current_user_id: socket.user_id,other_user: user});
         });
     });
 
@@ -244,6 +273,26 @@ router.route('/users/offline')
                 res.send(err);
             }
             res.json(users);
+        });
+    });
+
+router.route('/rooms')
+    .get(function(req,res) {
+        RoomModel.find(function(err,rooms) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(rooms);
+        });
+    });
+
+router.route('/room/delete')
+    .post(function(req,res) {
+        RoomModel.remove({_id: req.body.room_id},function(err,room) {
+            if(err) {
+                res.send(err);
+            }
+            res.json({message: 'Successfully deleted !'});
         });
     });
 

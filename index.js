@@ -462,6 +462,16 @@ router.route('/messages/byroomid')
             });
     });
 
+router.route('/messages/publicforuser')
+    .post(function(req,res) {
+        MessageModel.find({room: null,user: req.body.user_id},function(err,messages) {
+            if(err) {
+                res.send(err);
+            }
+            res.json(messages);
+        });
+    });
+
 var db = mongoose.connection;
 db.on('error',console.error.bind(console,'connection error: '));
 db.once('open',function() {
